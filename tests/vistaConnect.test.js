@@ -46,7 +46,7 @@ test('Vista adapter sends credentials only in headers and normalizes sessions', 
   });
   const sessions = await adapter.getSessions();
   assert.equal(sessions[0].id, '1');
-  assert.equal(captured.url, 'https://booking.example/WSVistaWebClient/OData.svc/Sessions?$format=json');
+  assert.equal(captured.url, 'https://booking.example/WSVistaWebClient/OData.svc/Sessions?$format=json&$filter=CinemaId%20eq%20%27cinema-1%27');
   assert.equal(captured.options.headers.connectapitoken, 'secret-token');
   assert.equal(captured.options.headers['Connect-Region-Code'], 'MN');
   assert.equal(captured.url.includes('secret-token'), false);
@@ -65,4 +65,19 @@ test('Vista adapter rejects non-JSON and non-success provider responses', async 
 test('Vista adapter requires server-side credentials and valid HTTPS origin', () => {
   assert.throws(() => new VistaConnectAdapter({ baseUrl: 'http://example.com', apiToken: 'secret', cinemaId: '1' }), { code: 'INVALID_PROVIDER_CONFIG' });
   assert.throws(() => new VistaConnectAdapter({ baseUrl: 'https://example.com', apiToken: '', cinemaId: '1' }), { code: 'INVALID_PROVIDER_CONFIG' });
+});
+
+test('Vista sessions are scoped to the configured cinema even if the provider returns mixed sites', async () => {
+  const adapter = new VistaConnectAdapter({
+    baseUrl: 'https://booking.example/WSVistaWebClient',
+    apiToken: 'secret-token',
+    cinemaId: 'cinema-1',
+    fetchImpl: async () => new Response(JSON.stringify({ d: { results: [
+      { SessionId: '1', CinemaId: 'cinema-1', Showtime: '2026-11-11T10:00:00' },
+      { SessionId: '2', CinemaId: 'cinema-2', Showtime: '2026-11-11T11:00:00' },
+      { SessionId: '3', Showtime: '2026-11-11T12:00:00' }
+    ] } }), { status: 200 })
+  });
+  const sessions = await adapter.getSessions();
+  assert.deepEqual(sessions.map(session => session.id), ['1']);
 });
