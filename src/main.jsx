@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, RoundedBox, Text } from '@react-three/drei';
 import { makeSeatMap, toggleSeat, totalPrice } from './seatCore.js';
 import './style.css';
@@ -17,16 +17,16 @@ function Seat3D({ seat, selected, onClick }) {
     <Text position={[0,1.34,.43]} fontSize={.18} color={chosen ? '#7affd6' : inactive ? '#9196a1' : '#e9efff'} anchorX="center">{seat.id}</Text>
   </group>;
 }
-function HallScene({ seats, selected, onClick, previewSeat }) {
+function CameraDirector({ seat }) {\n  const { camera } = useThree();\n  useEffect(() => {\n    if (seat) {\n      camera.position.set(seat.x, 1.45, seat.z + 1.05);\n      camera.lookAt(0, 4.05, -9.35);\n    } else {\n      camera.position.set(0, 13, 20);\n      camera.lookAt(0, 0, -1);\n    }\n    camera.updateProjectionMatrix();\n  }, [camera, seat]);\n  return null;\n}\nfunction HallScene({ seats, selected, onClick, previewSeat }) {
   return <Canvas shadows dpr={[1,1.75]} camera={{ position:[0,13,20], fov:46 }} gl={{ antialias:true }}>
-    <color attach="background" args={['#090f1b']}/><ambientLight intensity={1.35}/><directionalLight position={[-6,15,4]} intensity={2.5} castShadow/><pointLight position={[0,4,-9]} intensity={22} color="#577fd8" distance={20}/>
+    <CameraDirector seat={previewSeat}/>\n    <color attach="background" args={['#090f1b']}/><ambientLight intensity={1.35}/><directionalLight position={[-6,15,4]} intensity={2.5} castShadow/><pointLight position={[0,4,-9]} intensity={22} color="#577fd8" distance={20}/>
     <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.02,0]} receiveShadow><planeGeometry args={[22,27]}/><meshStandardMaterial color="#141c2b" roughness={.9}/></mesh>
     <mesh position={[0,4,-10]}><boxGeometry args={[16,7,.18]}/><meshStandardMaterial color="#0f1726"/></mesh>
     <mesh position={[0,4,-9.83]}><planeGeometry args={[14.9,6.1]}/><meshStandardMaterial emissive="#dae5ff" emissiveIntensity={.8} color="#91a9dd" toneMapped={false}/></mesh>
     <Text position={[0,4,-9.7]} fontSize={1} color="#18264d">RAINY CINEMA</Text>
     <mesh position={[-9,1,0]}><boxGeometry args={[.25,3,25]}/><meshStandardMaterial color="#1b2637"/></mesh><mesh position={[9,1,0]}><boxGeometry args={[.25,3,25]}/><meshStandardMaterial color="#1b2637"/></mesh>
     {seats.map(seat => <Seat3D key={seat.id} seat={seat} selected={selected} onClick={onClick}/>)}
-    <OrbitControls makeDefault minDistance={4} maxDistance={34} maxPolarAngle={Math.PI/2.08} minPolarAngle={.12} enableDamping target={previewSeat ? [previewSeat.x,1.5,-4] : [0,0,-1]} />
+    <OrbitControls makeDefault enabled={!previewSeat} minDistance={4} maxDistance={34} maxPolarAngle={Math.PI/2.08} minPolarAngle={.12} enableDamping target={[0,0,-1]} />
     {previewSeat && <group position={[previewSeat.x,1.3,previewSeat.z]}><mesh><sphereGeometry args={[.1,12,12]}/><meshBasicMaterial color="#37dca5"/></mesh></group>}
   </Canvas>;
 }
