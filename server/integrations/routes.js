@@ -1,4 +1,5 @@
 import { VistaConnectAdapter } from './vista-connect.js';
+import { validateCinemaProviderAdapter } from './provider-contract.js';
 
 function configuredAdapters(env) {
   const result = {};
@@ -36,8 +37,9 @@ function configuredAdapters(env) {
 export function registerIntegrationRoutes(app, { env = process.env, operatorOnly, apiError, adapters = {} }) {
   const configured = configuredAdapters(env);
   const providers = { ...configured, ...adapters };
+  const providerContracts = Object.fromEntries(Object.entries(providers).map(([id, adapter]) => [id, validateCinemaProviderAdapter(id, adapter)]));
   const vista = providers.vista ?? providers['vista-connect'] ?? null;
-  const resolveProvider = id => providers[id] ?? (id === 'vista-connect' ? vista : null);
+  const resolveProvider = id => providerContracts[id]?.adapter ?? (id === 'vista-connect' ? vista : null);
   const missing = () => apiError(503, 'PROVIDER_NOT_CONFIGURED', 'This cinema provider has not been configured with approved API credentials.');
 
   app.get('/api/v1/integrations', { preHandler: [app.authenticate, operatorOnly] }, async () => ({
@@ -50,12 +52,12 @@ export function registerIntegrationRoutes(app, { env = process.env, operatorOnly
         accessMode: 'READ_ONLY',
         docsUrl: 'https://booking.urgoo.mn/WSVistaWebClient/api-docs/general/introduction'
       },
-      ...Object.keys(providers).map(id => ({
+      ...Object.values(providerContracts).map(({ id, capabilities }) => ({
         id,
-        name: id === 'vista' ? 'Vista Connect (default)' : 'Vista Connect (' + id + ')',
+        name: id === 'vista' ? 'Vista Connect (default)' : 'Cinema provider (' + id + ')',
         status: 'CONFIGURED',
-        capabilities: ['sessions', 'seat-plan'],
-        accessMode: 'READ_ONLY'
+        capabilities,
+        accessMode: 'SERVER_TO_SERVER'
       })),
       {
         id: 'tix',
