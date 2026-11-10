@@ -127,8 +127,9 @@ export class VistaConnectAdapter {
   }
 
   async getSessions() {
-    const payload = await this.request('OData.svc/Sessions?$format=json');
-    return normalizeVistaSessions(payload).filter(session => !session.cinemaId || session.cinemaId === this.cinemaId);
+    const filter = encodeURIComponent("CinemaId eq '" + this.cinemaId.replace(/'/g, "''") + "'");
+    const payload = await this.request('OData.svc/Sessions?$format=json&$filter=' + filter);
+    return normalizeVistaSessions(payload).filter(session => session.cinemaId === this.cinemaId);
   }
 
   async getSeatPlan(sessionId) {
