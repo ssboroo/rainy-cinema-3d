@@ -32,7 +32,7 @@ const showtimeSchema = z.object({
   status: z.enum(['SCHEDULED','ON_SALE']).default('SCHEDULED')
 }).refine(value => new Date(value.endsAt) > new Date(value.startsAt), { message: 'Showtime end must be after start.' });
 
-export async function registerAdminRoutes(app, { db, operatorOnly, apiError, uuidSchema }) {
+export function registerAdminRoutes(app, { db, operatorOnly, apiError, uuidSchema }) {
   app.post('/api/v1/cinemas', { preHandler: [app.authenticate, operatorOnly] }, async (request, reply) => {
     const parsed = cinemaSchema.safeParse(request.body);
     if (!parsed.success) throw apiError(422, 'VALIDATION_ERROR', 'Cinema details are invalid.');
