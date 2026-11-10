@@ -109,17 +109,4 @@ export function registerIntegrationRoutes(app, { env = process.env, operatorOnly
     });
   });
 
-  // Backward-compatible aliases for the first Vista integration.
-  app.get('/api/v1/integrations/vista/health', { preHandler: [app.authenticate, operatorOnly] }, async () => {
-    if (!vista) throw missing();
-    return vista.health();
-  });
-  app.get('/api/v1/integrations/vista/sessions', { preHandler: [app.authenticate, operatorOnly] }, async () => {
-    if (!vista) throw missing();
-    return { provider: 'vista-connect', freshness: 'PROVIDER_CACHE_POLICY', data: await vista.getSessions() };
-  });
-  app.get('/api/v1/integrations/vista/sessions/:sessionId/seats', { preHandler: [app.authenticate, operatorOnly] }, async (request, reply) => {
-    if (!vista) throw missing();
-    return reply.send({ provider: 'vista-connect', freshness: 'NEAR_REAL_TIME_PROVIDER_CACHE', data: await vista.getSeatPlan(request.params.sessionId) });
-  });
 }
