@@ -11,6 +11,7 @@ import pg from 'pg';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { normalizeSeatIds, calculateTotal } from './domain/booking.js';
+import { registerAdminRoutes } from './routes/admin.js';
 
 const { Pool } = pg;
 const loginSchema = z.object({
@@ -49,7 +50,7 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
   app.register(helmet, { contentSecurityPolicy: false });
   const origins = (env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(v => v.trim()).filter(Boolean);
   if (origins.includes('*')) throw new Error('CORS_ORIGINS must list explicit trusted origins; wildcard access is not allowed.');
-  app.register(cors, { origin: origins, methods: ['GET','POST','DELETE','OPTIONS'] });
+  app.register(cors, { origin: origins, methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'] });
   app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   app.register(jwt, { secret: env.JWT_SECRET, sign: { expiresIn: '15m' } });
   const distRoot = resolve(process.cwd(), 'dist');
@@ -82,6 +83,8 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
       }
     });
   });
+
+  registerAdminRoutes(app, { db, operatorOnly, apiError, uuidSchema });
 
   app.get('/health/live', async () => ({ status: 'ok' }));
   app.get('/health/ready', async (_request, reply) => {
