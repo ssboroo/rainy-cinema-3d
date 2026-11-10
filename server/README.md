@@ -40,3 +40,12 @@ All administration endpoints require a bearer token with OWNER, ADMIN or OPERATO
 - `PATCH /api/v1/showtimes/:showtimeId` — change a showtime between SCHEDULED, ON_SALE, CANCELLED and COMPLETED.
 
 A showtime is created as SCHEDULED by default. An operator must explicitly switch it to ON_SALE before inventory can be queried or seats held. Layout changes should only be made when there are no active/upcoming showtimes in that auditorium; existing ticket inventory must not be silently rewritten.
+
+## Cinema integrations
+
+- `GET /api/v1/integrations` — list provider readiness (OWNER, ADMIN, OPERATOR).
+- `GET /api/v1/integrations/:providerId/health` — test a configured provider.
+- `GET /api/v1/integrations/:providerId/sessions` — fetch provider sessions.
+- `GET /api/v1/integrations/:providerId/sessions/:sessionId/seats` — fetch provider seat plan.
+
+The first connector is read-only Vista Connect. Configure it with `VISTA_CONNECT_BASE_URL`, `VISTA_CONNECT_API_TOKEN`, `VISTA_CONNECT_CINEMA_ID`, and optional `VISTA_CONNECT_REGION_CODE`. Multiple Vista instances can be configured through `CINEMA_PROVIDERS_JSON`. See [provider onboarding and limits](../docs/INTEGRATIONS.md). Provider credentials are server-only. Seat-plan availability may be cached by the cinema provider; it is not an atomic reservation.
