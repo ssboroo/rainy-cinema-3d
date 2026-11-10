@@ -39,6 +39,9 @@ export function registerIntegrationRoutes(app, { env = process.env, operatorOnly
   const providers = { ...configured, ...adapters };
   const providerContracts = Object.fromEntries(Object.entries(providers).map(([id, adapter]) => [id, validateCinemaProviderAdapter(id, adapter)]));
   const vista = providers.vista ?? providers['vista-connect'] ?? null;
+  const tix = providerContracts.tix;
+  const prime = providerContracts['prime-cineplex'];
+  const customRest = providerContracts['custom-rest'];
   const resolveProvider = id => providerContracts[id]?.adapter ?? (id === 'vista-connect' ? vista : null);
   const missing = () => apiError(503, 'PROVIDER_NOT_CONFIGURED', 'This cinema provider has not been configured with approved API credentials.');
 
@@ -62,24 +65,24 @@ export function registerIntegrationRoutes(app, { env = process.env, operatorOnly
       {
         id: 'tix',
         name: 'TIX Mongolia',
-        status: 'PARTNER_ACCESS_REQUIRED',
-        capabilities: ['sessions', 'seat-plan', 'booking', 'payments', 'tickets'],
-        accessMode: 'PARTNER_API_ONLY',
+        status: tix ? 'CONFIGURED' : 'PARTNER_ACCESS_REQUIRED',
+        capabilities: tix ? tix.capabilities : ['sessions', 'seat-plan', 'booking', 'payments', 'tickets'],
+        accessMode: tix ? 'SERVER_TO_SERVER' : 'PARTNER_API_ONLY',
         websiteUrl: 'https://www.tix.mn/'
       },
       {
         id: 'prime-cineplex',
         name: 'Prime Cineplex',
-        status: 'OFFICIAL_API_ACCESS_UNCONFIRMED',
-        capabilities: ['sessions', 'seat-plan', 'booking', 'tickets'],
-        accessMode: 'OFFICIAL_PARTNER_API_REQUIRED',
+        status: prime ? 'CONFIGURED' : 'OFFICIAL_API_ACCESS_UNCONFIRMED',
+        capabilities: prime ? prime.capabilities : ['sessions', 'seat-plan', 'booking', 'tickets'],
+        accessMode: prime ? 'SERVER_TO_SERVER' : 'OFFICIAL_PARTNER_API_REQUIRED',
         websiteUrl: 'https://www.primecineplex.mn/'
       },
       {
         id: 'custom-rest',
         name: 'Other cinema systems',
-        status: 'AVAILABLE_FOR_ADAPTER_DEVELOPMENT',
-        capabilities: ['sessions', 'seat-plan', 'booking', 'webhooks'],
+        status: customRest ? 'CONFIGURED' : 'AVAILABLE_FOR_ADAPTER_DEVELOPMENT',
+        capabilities: customRest ? customRest.capabilities : ['sessions', 'seat-plan', 'booking', 'webhooks'],
         accessMode: 'SERVER_TO_SERVER'
       }
     ]
