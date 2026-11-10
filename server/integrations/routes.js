@@ -62,7 +62,7 @@ export function registerIntegrationRoutes(app, { env = process.env, operatorOnly
         name: adapterName(id, providerContracts[id].adapter),
         status: 'CONFIGURED',
         capabilities,
-        accessMode: 'SERVER_TO_SERVER'
+        accessMode: providerContracts[id].adapter.providerId === 'vista-connect' ? 'READ_ONLY' : 'SERVER_TO_SERVER'
       })),
       {
         id: 'tix',
