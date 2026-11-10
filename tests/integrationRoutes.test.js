@@ -41,9 +41,9 @@ test('configured Vista adapter exposes live provider data only to operators', as
   const app = makeApp({ vista });
   const token = await operatorToken(app);
   const headers = { authorization: 'Bearer ' + token };
-  const health = await app.inject({ method: 'GET', url: '/api/v1/integrations/vista/health', headers });
-  const sessions = await app.inject({ method: 'GET', url: '/api/v1/integrations/vista/sessions', headers });
-  const seats = await app.inject({ method: 'GET', url: '/api/v1/integrations/vista/sessions/s1/seats', headers });
+  const health = await app.inject({ method: 'GET', url: '/api/v1/integrations/vista-connect/health', headers });
+  const sessions = await app.inject({ method: 'GET', url: '/api/v1/integrations/vista-connect/sessions', headers });
+  const seats = await app.inject({ method: 'GET', url: '/api/v1/integrations/vista-connect/sessions/s1/seats', headers });
   assert.equal(health.json().status, 'connected');
   assert.equal(sessions.json().data[0].id, 's1');
   assert.equal(seats.json().data[0].code, 'A1');
@@ -55,7 +55,7 @@ test('Vista routes return a clear setup error when credentials are absent', asyn
   const token = await operatorToken(app);
   const response = await app.inject({
     method: 'GET',
-    url: '/api/v1/integrations/vista/sessions',
+    url: '/api/v1/integrations/vista-connect/sessions',
     headers: { authorization: 'Bearer ' + token }
   });
   assert.equal(response.statusCode, 503);
