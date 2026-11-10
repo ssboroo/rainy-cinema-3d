@@ -20,6 +20,7 @@ const layoutSchema = z.object({
   if (new Set(codes).size !== codes.length) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Seat codes must be unique.' });
   const positions = value.seats.map(seat => seat.rowLabel + ':' + seat.seatNumber);
   if (new Set(positions).size !== positions.length) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Seat positions must be unique.' });
+  if (value.seats.some(seat => seat.code !== seat.rowLabel + seat.seatNumber)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Seat code must match its row and number.' });
 });
 const showtimeSchema = z.object({
   cinemaId: z.string().uuid(),
@@ -30,7 +31,8 @@ const showtimeSchema = z.object({
   standardPriceMnt: z.number().int().min(0).max(100000000),
   vipPriceMnt: z.number().int().min(0).max(100000000),
   status: z.enum(['SCHEDULED','ON_SALE']).default('SCHEDULED')
-}).refine(value => new Date(value.endsAt) > new Date(value.startsAt), { message: 'Showtime end must be after start.' });
+}).refine(value => new Date(value.endsAt) > new Date(value.startsAt), { message: 'Showtime end must be after start.' })
+  .refine(value => new Date(value.startsAt) > new Date(), { message: 'Showtime must start in the future.' });
 
 export function registerAdminRoutes(app, { db, operatorOnly, apiError, uuidSchema }) {
   app.post('/api/v1/cinemas', { preHandler: [app.authenticate, operatorOnly] }, async (request, reply) => {
