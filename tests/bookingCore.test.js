@@ -5,7 +5,7 @@ import { normalizeSeatIds, calculateTotal, createHold, isHoldActive, transitionB
 test('normalizes seat IDs and rejects duplicate or invalid seats', () => {
   assert.deepEqual(normalizeSeatIds([' a1 ', 'H12']), ['A1', 'H12']);
   assert.throws(() => normalizeSeatIds(['A1', 'A1']), { code: 'DUPLICATE_SEAT' });
-  assert.throws(() => normalizeSeatIds(['Z99']), { code: 'INVALID_SEAT' });
+  assert.throws(() => normalizeSeatIds(['Z0']), { code: 'INVALID_SEAT' });
   assert.throws(() => normalizeSeatIds([]), { code: 'INVALID_SELECTION' });
   assert.throws(() => normalizeSeatIds(Array.from({ length: 7 }, (_, i) => `A${i + 1}`)), { code: 'SELECTION_LIMIT' });
 });
