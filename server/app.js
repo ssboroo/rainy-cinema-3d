@@ -132,7 +132,7 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
     try {
       await client.query('BEGIN');
       const activeShowtime = await client.query(
-        `SELECT id FROM showtimes WHERE tenant_id=$1 AND id=$2 AND status='ON_SALE' FOR UPDATE`,
+        `SELECT id FROM showtimes WHERE tenant_id=$1 AND id=$2 AND status='ON_SALE' FOR SHARE`,
         [tenantId,showtime.data]
       );
       if (!activeShowtime.rowCount) throw apiError(409, 'SHOWTIME_NOT_ON_SALE', 'This showtime is not currently available for booking.');
