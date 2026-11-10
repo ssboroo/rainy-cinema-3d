@@ -12,6 +12,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { normalizeSeatIds, calculateTotal } from './domain/booking.js';
 import { registerAdminRoutes } from './routes/admin.js';
+import { registerIntegrationRoutes } from './integrations/routes.js';
 
 const { Pool } = pg;
 const loginSchema = z.object({
@@ -29,7 +30,7 @@ const operatorOnly = async request => {
   }
 };
 
-export function buildApp({ env = process.env, pool = null, logger = true } = {}) {
+export function buildApp({ env = process.env, pool = null, logger = true, integrations = {} } = {}) {
   if (!env.JWT_SECRET || env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters.');
   if (!pool && !env.DATABASE_URL) throw new Error('DATABASE_URL is required.');
   const db = pool || new Pool({
@@ -85,6 +86,7 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
   });
 
   registerAdminRoutes(app, { db, operatorOnly, apiError, uuidSchema });
+  registerIntegrationRoutes(app, { env, operatorOnly, apiError, adapters: integrations });
 
   app.get('/health/live', async () => ({ status: 'ok' }));
   app.get('/health/ready', async (_request, reply) => {
