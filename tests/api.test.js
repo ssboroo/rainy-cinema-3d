@@ -38,3 +38,22 @@ test('login validates input before touching persistence', async () => {
   assert.equal(response.json().error.code, 'VALIDATION_ERROR');
   await app.close();
 });
+
+test('read-only tenant users cannot create seat holds', async () => {
+  const app = makeApp();
+  await app.ready();
+  const token = app.jwt.sign({
+    sub: '00000000-0000-4000-8000-000000000002',
+    tenantId: '00000000-0000-4000-8000-000000000003',
+    role: 'VIEWER'
+  });
+  const response = await app.inject({
+    method: 'POST',
+    url: '/api/v1/showtimes/00000000-0000-4000-8000-000000000001/holds',
+    headers: { authorization: `Bearer ${token}`, 'idempotency-key': 'viewer-test-001' },
+    payload: { seatIds: ['A1'] }
+  });
+  assert.equal(response.statusCode, 403);
+  assert.equal(response.json().error.code, 'FORBIDDEN');
+  await app.close();
+});
