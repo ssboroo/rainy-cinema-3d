@@ -3,6 +3,9 @@ import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
+import fastifyStatic from '@fastify/static';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import argon2 from 'argon2';
 import pg from 'pg';
 import { createHash, randomUUID } from 'node:crypto';
@@ -43,6 +46,16 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
   app.register(cors, { origin: origins, credentials: true, methods: ['GET','POST','DELETE','OPTIONS'] });
   app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   app.register(jwt, { secret: env.JWT_SECRET, sign: { expiresIn: '15m' } });
+  const distRoot = resolve(process.cwd(), 'dist');
+  if (existsSync(resolve(distRoot, 'index.html'))) {
+    app.register(fastifyStatic, { root: distRoot, prefix: '/', wildcard: false });
+    app.setNotFoundHandler((request, reply) => {
+      if (request.method === 'GET' && request.headers.accept?.includes('text/html')) {
+        return reply.type('text/html').sendFile('index.html');
+      }
+      return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Resource not found.', requestId: request.id } });
+    });
+  }
 
   app.decorate('authenticate', async request => {
     try { await request.jwtVerify(); }
