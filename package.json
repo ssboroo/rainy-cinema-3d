@@ -8,10 +8,10 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test tests/*.test.js",
-    "start:api": "node server/index.js",
-    "dev:api": "node --watch server/index.js",
-    "db:migrate": "node server/db/migrate.js",
-    "db:bootstrap": "node server/scripts/bootstrap-tenant.js"
+    "start:api": "node --env-file-if-exists=.env server/index.js",
+    "dev:api": "node --env-file-if-exists=.env --watch server/index.js",
+    "db:migrate": "node --env-file-if-exists=.env server/db/migrate.js",
+    "db:bootstrap": "node --env-file-if-exists=.env server/scripts/bootstrap-tenant.js"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",
