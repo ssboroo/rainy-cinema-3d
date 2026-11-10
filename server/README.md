@@ -28,3 +28,15 @@ Do not expose the database, JWT secret, provider keys, or bootstrap password to 
 ## Payment and ticketing boundary
 
 The app does not claim a reservation or accept payment without a verified operator/payment adapter. The booking endpoint returns an explicit `503 PAYMENT_PROVIDER_NOT_CONFIGURED` until a real provider adapter, webhook signature verification, reconciliation and refund policy have been configured. No fake booking success is returned.
+
+## Tenant administration endpoints
+
+All administration endpoints require a bearer token with OWNER, ADMIN or OPERATOR role.
+
+- `POST /api/v1/cinemas` — create a cinema.
+- `POST /api/v1/cinemas/:cinemaId/auditoriums` — add an auditorium.
+- `PUT /api/v1/auditoriums/:auditoriumId/seats` — replace the current seat layout (1–1000 seats; unique seat codes and positions).
+- `POST /api/v1/showtimes` — create a showtime and snapshot its active seat inventory and MNT prices.
+- `PATCH /api/v1/showtimes/:showtimeId` — change a showtime between SCHEDULED, ON_SALE, CANCELLED and COMPLETED.
+
+A showtime is created as SCHEDULED by default. An operator must explicitly switch it to ON_SALE before inventory can be queried or seats held. Layout changes should only be made when there are no active/upcoming showtimes in that auditorium; existing ticket inventory must not be silently rewritten.
