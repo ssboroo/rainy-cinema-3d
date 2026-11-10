@@ -141,6 +141,51 @@ paths:
       responses:
         '200': { description: Showtime status updated }
         '404': { description: Showtime not found }
+  /api/v1/integrations:
+    get:
+      security: [{ bearerAuth: [] }]
+      summary: List cinema provider connectors and their access status
+      responses:
+        '200': { description: Provider capability and readiness list }
+  /api/v1/integrations/{providerId}/health:
+    get:
+      security: [{ bearerAuth: [] }]
+      summary: Check a configured cinema provider
+      parameters:
+        - in: path
+          name: providerId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Provider connectivity result }
+        '503': { description: Provider is not configured }
+  /api/v1/integrations/{providerId}/sessions:
+    get:
+      security: [{ bearerAuth: [] }]
+      summary: Read sessions from a cinema provider
+      parameters:
+        - in: path
+          name: providerId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Normalized external showtimes }
+  /api/v1/integrations/{providerId}/sessions/{sessionId}/seats:
+    get:
+      security: [{ bearerAuth: [] }]
+      summary: Read external provider seat plan
+      parameters:
+        - in: path
+          name: providerId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: sessionId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Normalized seat plan with provider freshness metadata }
+        '503': { description: Provider is not configured }
 components:
   securitySchemes:
     bearerAuth:
