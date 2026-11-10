@@ -11,6 +11,7 @@ function safeText(value, fallback = '') {
   return typeof value === 'string' ? value.trim().slice(0, 500) : fallback;
 }
 function validBaseUrl(value) {
+  if (typeof value !== 'string') return false;
   try {
     const url = new URL(value);
     return url.protocol === 'https:' && !url.username && !url.password && !url.search && !url.hash;
@@ -80,7 +81,7 @@ export function normalizeVistaSeatPlan(payload) {
 export class VistaConnectAdapter {
   constructor({ baseUrl, apiToken, cinemaId, regionCode = '', fetchImpl = globalThis.fetch, timeoutMs = 10000 }) {
     if (!validBaseUrl(baseUrl) || typeof apiToken !== 'string' || apiToken.trim().length < 8 ||
-        typeof cinemaId !== 'string' || !cinemaId.trim() || typeof fetchImpl !== 'function' ||
+        typeof cinemaId !== 'string' || !cinemaId.trim() || typeof regionCode !== 'string' || typeof fetchImpl !== 'function' ||
         !Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 30000) {
       throw integrationError('INVALID_PROVIDER_CONFIG', 'Vista Connect requires an HTTPS base URL, API token, cinema ID and valid timeout.', 500);
     }
