@@ -14,10 +14,10 @@
 ## Must be configured before a real launch
 - PostgreSQL service, DATABASE_URL, JWT_SECRET and exact CORS_ORIGINS.
 - Apply migrations and provision an owner using the bootstrap script.
-- Create cinemas, auditoriums, seat layouts, showtimes and per-showtime inventory using a controlled admin workflow (not yet shipped).
+- Build the operator-facing admin dashboard on top of the cinema, auditorium, seat-layout and showtime management API.
 - Configure a real cinema operator/ticketing adapter using that provider's official API specification and sandbox credentials.
 - Configure a payment provider, signed webhook verification, payment reconciliation, refunds and cancellation rules.
-- Add refresh-token rotation, password reset, MFA for operators, account invitation and session revocation.
+- Add customer identity/guest checkout, refresh-token rotation, password reset, MFA for operators, account invitation and session revocation.
 - Add operational monitoring, backups/PITR, alerting, load testing and security review.
 
 ## Important
