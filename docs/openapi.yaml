@@ -91,6 +91,56 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         '503': { description: Disabled until payment and cinema provider verification is configured }
+  /api/v1/cinemas:
+    post:
+      security: [{ bearerAuth: [] }]
+      summary: Create a tenant cinema (OWNER, ADMIN, OPERATOR)
+      responses:
+        '201': { description: Cinema created }
+        '403': { description: Insufficient role }
+  /api/v1/cinemas/{cinemaId}/auditoriums:
+    post:
+      security: [{ bearerAuth: [] }]
+      summary: Create an auditorium in a tenant cinema
+      parameters:
+        - in: path
+          name: cinemaId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201': { description: Auditorium created }
+        '404': { description: Cinema not found }
+  /api/v1/auditoriums/{auditoriumId}/seats:
+    put:
+      security: [{ bearerAuth: [] }]
+      summary: Replace an auditorium seat layout
+      parameters:
+        - in: path
+          name: auditoriumId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Layout saved and version incremented }
+        '409': { description: Auditorium has active or upcoming showtimes }
+  /api/v1/showtimes:
+    post:
+      security: [{ bearerAuth: [] }]
+      summary: Create a showtime and snapshot its seat inventory
+      responses:
+        '201': { description: Showtime created }
+        '409': { description: Auditorium has no active seats }
+  /api/v1/showtimes/{showtimeId}:
+    patch:
+      security: [{ bearerAuth: [] }]
+      summary: Change showtime sale status
+      parameters:
+        - in: path
+          name: showtimeId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Showtime status updated }
+        '404': { description: Showtime not found }
 components:
   securitySchemes:
     bearerAuth:
