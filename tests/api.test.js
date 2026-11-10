@@ -57,3 +57,35 @@ test('read-only tenant users cannot create seat holds', async () => {
   assert.equal(response.json().error.code, 'FORBIDDEN');
   await app.close();
 });
+
+test('cinema administration routes enforce operator role and validate payloads', async () => {
+  const app = makeApp();
+  await app.ready();
+  const viewerToken = app.jwt.sign({
+    sub: '00000000-0000-4000-8000-000000000002',
+    tenantId: '00000000-0000-4000-8000-000000000003',
+    role: 'VIEWER'
+  });
+  const forbidden = await app.inject({
+    method: 'POST',
+    url: '/api/v1/cinemas',
+    headers: { authorization: `Bearer ${viewerToken}` },
+    payload: { name: 'Cinema' }
+  });
+  assert.equal(forbidden.statusCode, 403);
+
+  const operatorToken = app.jwt.sign({
+    sub: '00000000-0000-4000-8000-000000000002',
+    tenantId: '00000000-0000-4000-8000-000000000003',
+    role: 'OPERATOR'
+  });
+  const invalid = await app.inject({
+    method: 'POST',
+    url: '/api/v1/cinemas',
+    headers: { authorization: `Bearer ${operatorToken}` },
+    payload: { name: 'X' }
+  });
+  assert.equal(invalid.statusCode, 422);
+  assert.equal(invalid.json().error.code, 'VALIDATION_ERROR');
+  await app.close();
+});
