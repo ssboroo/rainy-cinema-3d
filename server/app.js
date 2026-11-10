@@ -123,7 +123,7 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
     return reply.send({ data: result.rows });
   });
 
-  app.post('/api/v1/showtimes/:showtimeId/holds', { preHandler: app.authenticate }, async (request, reply) => {
+  app.post('/api/v1/showtimes/:showtimeId/holds', { preHandler: [app.authenticate, operatorOnly] }, async (request, reply) => {
     const showtime = uuidSchema.safeParse(request.params.showtimeId);
     const body = holdSchema.safeParse(request.body);
     const key = request.headers['idempotency-key'];
@@ -214,7 +214,7 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
     }
   });
 
-  app.delete('/api/v1/holds/:holdId', { preHandler: app.authenticate }, async (request, reply) => {
+  app.delete('/api/v1/holds/:holdId', { preHandler: [app.authenticate, operatorOnly] }, async (request, reply) => {
     const parsed = uuidSchema.safeParse(request.params.holdId);
     if (!parsed.success) throw apiError(422, 'VALIDATION_ERROR', 'Invalid hold ID.');
     const client = await db.connect();
