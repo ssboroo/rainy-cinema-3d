@@ -54,7 +54,7 @@ npm run build
 
 ## API
 
-See [API setup and endpoint guide](server/README.md), [OpenAPI contract](docs/openapi.yaml), [architecture](docs/ARCHITECTURE.md), and [production readiness checklist](docs/PRODUCTION_READINESS.md).
+See [API setup and endpoint guide](server/README.md), [cinema provider integrations](docs/INTEGRATIONS.md), [OpenAPI contract](docs/openapi.yaml), [architecture](docs/ARCHITECTURE.md), and [production readiness checklist](docs/PRODUCTION_READINESS.md).
 
 ## Important integration boundary
 
