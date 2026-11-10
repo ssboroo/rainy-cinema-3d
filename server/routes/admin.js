@@ -67,6 +67,11 @@ export function registerAdminRoutes(app, { db, operatorOnly, apiError, uuidSchem
         [request.user.tenantId, auditoriumId.data]
       );
       if (!auditorium.rowCount) throw apiError(404, 'AUDITORIUM_NOT_FOUND', 'Auditorium was not found.');
+      const scheduled = await client.query(
+        "SELECT id FROM showtimes WHERE tenant_id=$1 AND auditorium_id=$2 AND status IN ('SCHEDULED','ON_SALE') AND ends_at > now() LIMIT 1 FOR UPDATE",
+        [request.user.tenantId, auditoriumId.data]
+      );
+      if (scheduled.rowCount) throw apiError(409, 'LAYOUT_IN_USE', 'The auditorium has an active or upcoming showtime.');
       await client.query(
         'UPDATE seats SET is_active=false WHERE tenant_id=$1 AND auditorium_id=$2',
         [request.user.tenantId, auditoriumId.data]
