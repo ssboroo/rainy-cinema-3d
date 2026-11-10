@@ -117,6 +117,11 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
     const client = await db.connect();
     try {
       await client.query('BEGIN');
+      const activeShowtime = await client.query(
+        `SELECT id FROM showtimes WHERE tenant_id=$1 AND id=$2 AND status='ON_SALE' FOR UPDATE`,
+        [tenantId,showtime.data]
+      );
+      if (!activeShowtime.rowCount) throw apiError(409, 'SHOWTIME_NOT_ON_SALE', 'This showtime is not currently available for booking.');
       await client.query('DELETE FROM idempotency_keys WHERE expires_at < now()');
       const claimed = await client.query(
         `INSERT INTO idempotency_keys (tenant_id,user_id,idempotency_key,request_hash,expires_at)
