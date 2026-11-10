@@ -110,6 +110,17 @@ Ask each cinema/vendor for:
 - payment ownership, settlement, commission, taxes and refund responsibility
 - test accounts, test payment methods and go-live approval
 
+
+## Mongolia partner contact path
+
+TIX is the highest-leverage partner discussion because its public cinema directory lists multiple operators/branches, including CinemaNext, Urgoo, Skywing and United Cinema. One approved TIX partner API could potentially provide access to several cinemas, subject to its actual partner contract and permissions.
+
+- TIX: `info@tix.mn` / `support@tix.mn` — request the official B2B/partner API specification and sandbox.
+- Prime Cineplex: `admin@primecineplex.mn`, +976 7510-0000 — request an official integration contact and sandbox/API documentation.
+- Urgoo / Vista: use the published Connect API portal and ask the cinema/Vista administrator for a client token, site ID, sales-channel configuration and sandbox access.
+
+Do not send passwords or API tokens by email or chat. Use the approved secret manager/Railway Variables after the partner issues credentials.
+
 ## Current limits
 
 The Vista connector currently synchronizes showtimes and seat plans only. It does not create or pay for a real ticket. TIX and Prime are listed as partner-access-required, not connected. Full multi-cinema sales must wait for each provider's authorized sandbox credentials and successful contract tests.
