@@ -17,14 +17,14 @@ A public website or mobile app does not imply permission to automate its private
 
 Every provider adapter should implement:
 
-- \`health()\` — authenticated connectivity and provider status
-- \`getSessions()\` — normalized movie sessions and sales availability
-- \`getSeatPlan(sessionId)\` — provider seat layout and status
-- \`createOrder(input)\` — optional, only when officially supported
-- \`setTickets(orderId, input)\` — optional, provider-side seat/ticket selection
-- \`completeOrder(orderId, paymentReference)\` — optional, only after payment is independently verified
-- \`getBooking(bookingReference)\` — optional, provider-side booking reconciliation
-- \`cancelBooking(bookingReference)\` / \`refundBooking(...)\` — optional, only when provider policy/API supports it
+- `health()` — authenticated connectivity and provider status
+- `getSessions()` — normalized movie sessions and sales availability
+- `getSeatPlan(sessionId)` — provider seat layout and status
+- `createOrder(input)` — optional, only when officially supported
+- `setTickets(orderId, input)` — optional, provider-side seat/ticket selection
+- `completeOrder(orderId, paymentReference)` — optional, only after payment is independently verified
+- `getBooking(bookingReference)` — optional, provider-side booking reconciliation
+- `cancelBooking(bookingReference)` / `refundBooking(...)` — optional, only when provider policy/API supports it
 
 Capabilities must be declared per provider. Unsupported methods must fail explicitly; they must never return demo success.
 
@@ -39,28 +39,28 @@ Official documentation:
 
 The current implementation is deliberately read-only:
 
-- \`GET /api/v1/integrations\` — provider readiness and capabilities
-- \`GET /api/v1/integrations/:providerId/health\`
-- \`GET /api/v1/integrations/:providerId/sessions\`
-- \`GET /api/v1/integrations/:providerId/sessions/:sessionId/seats\`
+- `GET /api/v1/integrations` — provider readiness and capabilities
+- `GET /api/v1/integrations/:providerId/health`
+- `GET /api/v1/integrations/:providerId/sessions`
+- `GET /api/v1/integrations/:providerId/sessions/:sessionId/seats`
 
 Vista's Connect seat-plan endpoint is near-real-time and may be short-term cached. The connector exposes that freshness limitation. It does not promise an atomic reservation based on a seat-map response.
 
 ### Configure one Vista circuit
 
-Set these variables in Railway (or local \`.env\`) after the cinema grants access:
+Set these variables in Railway (or local `.env`) after the cinema grants access:
 
-- \`VISTA_CONNECT_BASE_URL=https://booking.urgoo.mn/WSVistaWebClient\`
-- \`VISTA_CONNECT_API_TOKEN\` — issued by the cinema/Vista; never commit it
-- \`VISTA_CONNECT_CINEMA_ID\` — exact cinema/site ID issued by the operator
-- \`VISTA_CONNECT_REGION_CODE\` — only when required by the operator
-- \`VISTA_CONNECT_TIMEOUT_MS=10000\`
+- `VISTA_CONNECT_BASE_URL=https://booking.urgoo.mn/WSVistaWebClient`
+- `VISTA_CONNECT_API_TOKEN` — issued by the cinema/Vista; never commit it
+- `VISTA_CONNECT_CINEMA_ID` — exact cinema/site ID issued by the operator
+- `VISTA_CONNECT_REGION_CODE` — only when required by the operator
+- `VISTA_CONNECT_TIMEOUT_MS=10000`
 
 ### Configure multiple Vista circuits
 
-Set \`CINEMA_PROVIDERS_JSON\` as a Railway secret/environment variable. Example structure (replace all placeholders; never commit real secrets):
+Set `CINEMA_PROVIDERS_JSON` as a Railway secret/environment variable. Example structure (replace all placeholders; never commit real secrets):
 
-\`\`\`json
+```json
 [
   {
     "id": "urgoo",
@@ -78,7 +78,7 @@ Set \`CINEMA_PROVIDERS_JSON\` as a Railway secret/environment variable. Example 
     "cinemaId": "<issued-cinema-id>"
   }
 ]
-\`\`\`
+```
 
 Maximum 20 provider instances. Provider IDs are lowercase slugs. Only HTTPS origins are accepted.
 
