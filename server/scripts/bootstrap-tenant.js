@@ -20,7 +20,7 @@ try {
     );
     await client.query(
       `INSERT INTO users(tenant_id,email,password_hash,role) VALUES($1,$2,$3,'OWNER')
-       ON CONFLICT (tenant_id, lower(email)) DO NOTHING`,
+       ON CONFLICT (tenant_id, (lower(email))) DO NOTHING`,
       [tenant.rows[0].id, ADMIN_EMAIL.toLowerCase(), passwordHash]
     );
     await client.query('COMMIT');
