@@ -1,6 +1,4 @@
 -- PostgreSQL 16+ | RAINY CINEMA 3D initial schema
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
 CREATE TABLE tenants (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL CHECK (length(trim(name)) BETWEEN 2 AND 120),
