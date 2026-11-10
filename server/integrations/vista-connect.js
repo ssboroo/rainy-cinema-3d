@@ -85,6 +85,7 @@ export class VistaConnectAdapter {
         !Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 30000) {
       throw integrationError('INVALID_PROVIDER_CONFIG', 'Vista Connect requires an HTTPS base URL, API token, cinema ID and valid timeout.', 500);
     }
+    this.providerId = PROVIDER;
     this.baseUrl = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/');
     this.apiToken = apiToken;
     this.cinemaId = cinemaId.trim();
