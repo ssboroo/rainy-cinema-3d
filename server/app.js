@@ -22,6 +22,11 @@ const holdSchema = z.object({ seatIds: z.array(z.string()).min(1).max(6) });
 const uuidSchema = z.string().uuid();
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const apiError = (statusCode, code, message) => Object.assign(new Error(message), { statusCode, code });
+const operatorOnly = async request => {
+  if (!['OWNER', 'ADMIN', 'OPERATOR'].includes(request.user.role)) {
+    throw apiError(403, 'FORBIDDEN', 'Your account does not have permission to manage seat holds.');
+  }
+};
 
 export function buildApp({ env = process.env, pool = null, logger = true } = {}) {
   if (!env.JWT_SECRET || env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters.');
@@ -43,7 +48,8 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
   app.decorate('db', db);
   app.register(helmet, { contentSecurityPolicy: false });
   const origins = (env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(v => v.trim()).filter(Boolean);
-  app.register(cors, { origin: origins, credentials: true, methods: ['GET','POST','DELETE','OPTIONS'] });
+  if (origins.includes('*')) throw new Error('CORS_ORIGINS must list explicit trusted origins; wildcard access is not allowed.');
+  app.register(cors, { origin: origins, methods: ['GET','POST','DELETE','OPTIONS'] });
   app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   app.register(jwt, { secret: env.JWT_SECRET, sign: { expiresIn: '15m' } });
   const distRoot = resolve(process.cwd(), 'dist');
