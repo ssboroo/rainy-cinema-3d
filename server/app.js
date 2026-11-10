@@ -111,6 +111,15 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
   app.get('/api/v1/showtimes/:showtimeId/seats', { preHandler: app.authenticate }, async (request, reply) => {
     const showtimeId = uuidSchema.safeParse(request.params.showtimeId);
     if (!showtimeId.success) throw apiError(422, 'VALIDATION_ERROR', 'Invalid showtime ID.');
+    await db.query(
+      `UPDATE showtime_seats SET status='AVAILABLE',hold_id=NULL,hold_expires_at=NULL,updated_at=now()
+       WHERE tenant_id=$1 AND showtime_id=$2 AND status='HELD' AND hold_expires_at <= now()`,
+      [request.user.tenantId, showtimeId.data]
+    );
+    await db.query(
+      `UPDATE seat_holds SET status='EXPIRED' WHERE tenant_id=$1 AND showtime_id=$2 AND status='ACTIVE' AND expires_at <= now()`,
+      [request.user.tenantId, showtimeId.data]
+    );
     const result = await db.query(
       `SELECT s.code, s.row_label AS "row", s.seat_number AS "number", s.seat_type AS "type",
               s.x, s.z, ss.status, ss.price_amount AS "priceMnt", ss.hold_expires_at AS "holdExpiresAt"
@@ -137,11 +146,6 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
     const client = await db.connect();
     try {
       await client.query('BEGIN');
-      const activeShowtime = await client.query(
-        `SELECT id FROM showtimes WHERE tenant_id=$1 AND id=$2 AND status='ON_SALE' FOR SHARE`,
-        [tenantId,showtime.data]
-      );
-      if (!activeShowtime.rowCount) throw apiError(409, 'SHOWTIME_NOT_ON_SALE', 'This showtime is not currently available for booking.');
       await client.query('DELETE FROM idempotency_keys WHERE expires_at < now()');
       const claimed = await client.query(
         `INSERT INTO idempotency_keys (tenant_id,user_id,idempotency_key,request_hash,expires_at)
@@ -160,6 +164,11 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
         await client.query('COMMIT');
         return reply.code(record.response_status).send(record.response_body);
       }
+      const activeShowtime = await client.query(
+        `SELECT id FROM showtimes WHERE tenant_id=$1 AND id=$2 AND status='ON_SALE' FOR SHARE`,
+        [tenantId,showtime.data]
+      );
+      if (!activeShowtime.rowCount) throw apiError(409, 'SHOWTIME_NOT_ON_SALE', 'This showtime is not currently available for booking.');
 
       await client.query(
         `UPDATE showtime_seats SET status='AVAILABLE',hold_id=NULL,hold_expires_at=NULL,updated_at=now()
