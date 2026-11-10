@@ -38,11 +38,13 @@ export function registerIntegrationRoutes(app, { env = process.env, operatorOnly
   const configured = configuredAdapters(env);
   const providers = { ...configured, ...adapters };
   const providerContracts = Object.fromEntries(Object.entries(providers).map(([id, adapter]) => [id, validateCinemaProviderAdapter(id, adapter)]));
-  const vista = providers.vista ?? providers['vista-connect'] ?? null;
+  const vistaInstances = Object.values(providerContracts).filter(({ adapter }) => adapter.providerId === 'vista-connect');
+  const vista = providers.vista ?? providers['vista-connect'] ?? (vistaInstances.length === 1 ? vistaInstances[0].adapter : null);
   const tix = providerContracts.tix;
   const prime = providerContracts['prime-cineplex'];
   const customRest = providerContracts['custom-rest'];
   const resolveProvider = id => providerContracts[id]?.adapter ?? (id === 'vista-connect' ? vista : null);
+  const adapterName = (id, adapter) => adapter.providerId === 'vista-connect' ? 'Vista Connect (' + id + ')' : 'Cinema provider (' + id + ')';
   const missing = () => apiError(503, 'PROVIDER_NOT_CONFIGURED', 'This cinema provider has not been configured with approved API credentials.');
 
   app.get('/api/v1/integrations', { preHandler: [app.authenticate, operatorOnly] }, async () => ({
@@ -50,14 +52,14 @@ export function registerIntegrationRoutes(app, { env = process.env, operatorOnly
       {
         id: 'vista-connect',
         name: 'Vista Connect',
-        status: vista ? 'CONFIGURED' : Object.values(providers).some(Boolean) ? 'SEE_CONFIGURED_INSTANCES' : 'NOT_CONFIGURED',
+        status: vista || vistaInstances.length ? 'CONFIGURED' : 'NOT_CONFIGURED',
         capabilities: ['sessions', 'seat-plan'],
         accessMode: 'READ_ONLY',
         docsUrl: 'https://booking.urgoo.mn/WSVistaWebClient/api-docs/general/introduction'
       },
       ...Object.values(providerContracts).map(({ id, capabilities }) => ({
         id,
-        name: id === 'vista' ? 'Vista Connect (default)' : 'Cinema provider (' + id + ')',
+        name: adapterName(id, providerContracts[id].adapter),
         status: 'CONFIGURED',
         capabilities,
         accessMode: 'SERVER_TO_SERVER'
