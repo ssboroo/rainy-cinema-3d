@@ -109,7 +109,8 @@ export function buildApp({ env = process.env, pool = null, logger = true } = {})
       `SELECT s.code, s.row_label AS "row", s.seat_number AS "number", s.seat_type AS "type",
               s.x, s.z, ss.status, ss.price_amount AS "priceMnt", ss.hold_expires_at AS "holdExpiresAt"
        FROM showtime_seats ss JOIN seats s ON s.id = ss.seat_id AND s.tenant_id = ss.tenant_id
-       JOIN showtimes st ON st.id=ss.showtime_id AND st.tenant_id=ss.tenant_id AND st.status='ON_SALE'\n       WHERE ss.tenant_id = $1 AND ss.showtime_id = $2 AND s.is_active = true
+       JOIN showtimes st ON st.id=ss.showtime_id AND st.tenant_id=ss.tenant_id AND st.status='ON_SALE'
+       WHERE ss.tenant_id = $1 AND ss.showtime_id = $2 AND s.is_active = true
        ORDER BY s.row_label, s.seat_number`,
       [request.user.tenantId, showtimeId.data]
     );
