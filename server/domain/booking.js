@@ -1,4 +1,4 @@
-const SEAT_ID = /^[A-H](?:[1-9]|1[0-2])$/;
+const SEAT_ID = /^[A-Z]{1,3}[1-9][0-9]{0,2}$/;
 const MAX_SELECTION = 6;
 const DEFAULT_TTL_SECONDS = 600;
 const MAX_TTL_SECONDS = 900;
@@ -6,6 +6,7 @@ const MAX_TTL_SECONDS = 900;
 function domainError(code, message) {
   const error = new Error(message);
   error.code = code;
+  error.statusCode = 422;
   return error;
 }
 
